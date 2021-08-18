@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<head>
+    <title>
+        Product Page
+    </title>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        function AJAX(data,method,url){
+            var xmlhttp = new XMLHttpRequest();  
+            xmlhttp.open(method, url);
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.send(JSON.stringify(data));
+            xmlhttp.onload = function() {
+                console.log(this.responseText);
+                if(url != "search"){
+                    populateData(this.responseText);
+                }else{
+                    populateSearchData(this.responseText);
+                }
+                
+            }
+        }
+        
+        function addprod(){
+            url = "addProdDetails";
+            method = "POST";
+            var ProdName = document.getElementById("ProdName").value;
+            var ProdPrice = document.getElementById("ProdPrice").value;
+            var ProdQuant = document.getElementById("ProdQuant").value;
+        
+            if(ProdPrice == undefined || ProdPrice == null || ProdQuant == ""){
+                alert("Please enter Product Price");
+                return false;
+            }
+            
+            if(ProdQuant == undefined || ProdQuant == null || ProdQuant == ""){
+                alert("Please enter Product Quantity");
+                return false;
+            }
+            var obj ={
+                "ProductName":ProdName,
+                "Price":ProdPrice,
+                "Quantity":ProdQuant
+            }
+            AJAX(obj ,method ,url);
+            clear();
+        }
+        
+        function updateprod(){
+            url = "update";
+            method = "PATCH";
+            var ProdName = document.getElementById("ProdName").value;
+            var ProdPrice = document.getElementById("ProdPrice").value;
+            var ProdQuant = document.getElementById("ProdQuant").value;
+            if(ProdPrice == undefined || ProdPrice == null || ProdQuant == ""){
+                alert("Please enter Product Price");
+                return false;
+            }
+            
+            if(ProdQuant == undefined || ProdQuant == null || ProdQuant == ""){
+                alert("Please enter Product Quantity");
+                return false;
+            }
+            var obj ={
+                "ProductName":ProdName,
+                "Price":ProdPrice,
+                "Quantity":ProdQuant
+            }
+            AJAX(obj ,method ,url);
+            clear();
+        }
+        
+        function deleteprod(){
+            
+            method = "DELETE";
+            var ProdName = document.getElementById("ProdName").value;
+            url = "deleteID/"+ ProdName;
+            AJAX({},method ,url);
+            clear();
+        }
+        
+        
+        function populateData(data){
+            data = JSON.parse(data);
+            var tbody = document.getElementById("data");
+        
+            if(data.error != undefined){
+                alert(data.error);
+            }else{
+                var first = tbody.firstElementChild;
+                while (first) {
+                    first.remove();
+                    first = tbody.firstElementChild;
+                }
+                
+                
+                for(eachdata in data){
+                    var tr = document.createElement("tr");
+                    var SrNo = document.createElement("td");
+                    SrNo.innerHTML = parseInt(eachdata)+1;
+                    var ProdName = document.createElement("td");
+                    ProdName.innerHTML = data[eachdata].ProductName;
+                    var ProdPrice = document.createElement("td");
+                    ProdPrice.innerHTML = data[eachdata].Price;
+                    var ProdQuant = document.createElement("td");
+                    ProdQuant.innerHTML = data[eachdata].Quantity;
+                    var ProdAction = document.createElement("td");
+                    tr.appendChild(SrNo);
+                    tr.appendChild(ProdName);
+                    tr.appendChild(ProdPrice);
+                    tr.appendChild(ProdQuant);
+                    tbody.appendChild(tr);
+                }
+            }
+            
+        }
+        
+        function clear(){
+            document.getElementById("ProdName").value = "";
+            document.getElementById("ProdPrice").value = "";
+            document.getElementById("ProdQuant").value = "";
+        }
+        function init(){
+            url = "getProdDetails";
+            method = "GET";
+            AJAX({} ,method ,url);
+        }
+        init()
+        
+        function search(){
+            url = "search";
+            method = "POST";
+            var SerachName = document.getElementById("search").value;
+            if(SerachName != ""){
+                var obj ={
+                    "ProductName":SerachName
+                }
+                AJAX(obj ,method ,url);
+            }
+        }
+        
+        function populateSearchData(data){
+            data = JSON.parse(data);
+            var products = document.getElementById("products");
+            if(data.length ==0){
+                
+            }else{
+                var first = products.firstElementChild;
+                    while (first) {
+                        first.remove();
+                        first = products.firstElementChild;
+                    }
+                for(var i=0;i<data.length;i++){
+                    
+                    var option = document.createElement("option");
+                    option.value = data[i];
+                    products.appendChild(option);
+                }
+            }
+        }
+        </script>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark justify-content-between">
+        <a class="navbar-brand">Product Information</a>
+        <div class="form-inline">
+            <input class="form-control mr-sm-2" type="text" placeholder="Search Product" id="search" list="products" onkeydown="search()"/>
+            <datalist id="products">
+            
+            </datalist>
+        </div>
+      </nav>
+    
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2">
+                Enter Product Name :
+            </div> 
+            <div class="col-md-2">
+                <input type="text" id= "ProdName" required/>
+            </div>
+        </div>
+        <p> </p>
+        <div class="row">
+            <div  class="col-md-2">
+                Enter Price : 
+            </div>
+            <div  class="col-md-2">
+                <input type="number" id= "ProdPrice" />
+            </div>
+            
+        </div>
+        <p> </p>
+        <div class="row">
+            <div  class="col-md-2">
+                Enter Quantity :
+            </div>
+            <div  class="col-md-2">
+                <input type="number" id="ProdQuant" />
+            </div>
+        </div>
+
+        <p> </p>
+        
+
+        <input type="button" value="Add Product" onclick="addprod()"/>
+        <input type="button" value="Update Product" onclick="updateprod()"/>
+        <input type="button" value="Delete Product" onclick="deleteprod()"/>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped text-center">
+            <thead class="thead-light">
+                <tr>
+                    <th>
+                        Sr No
+                    </th>
+                    <th>
+                        Product Name
+                    </th>
+                    <th>
+                        Product Price
+                    </th>
+                    <th>
+                        Product Qunatity
+                    </th>
+                </tr>
+            </thead>
+            <tbody id= "data">
+                
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
